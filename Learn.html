@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border: 1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+</head>
+<body onload="startGame()">
+<script>
+window.addEventListener("keydown", move, false);
+var direction = 0;
+function move(e) {
+    switch(e.keyCode) {
+        case 37:
+            moveleft();
+            direction = "left";
+            player_face.speedX = player.speedX;
+            player_face.speedY = player.speedY;
+            player_face.width = 5;
+            player_face.height = player.height;
+            player_face.x = player.x;
+            player_face.y = player.y;
+            break;
+        case 38:
+            moveup();
+            direction = "up";
+            player_face.speedX = player.speedX;
+            player_face.speedY = player.speedY;
+            player_face.width = player.width;
+            player_face.height = 5;
+            player_face.x = player.x;
+            player_face.y = player.y;
+            break;
+        case 39:
+            moveright();
+            direction = "right";
+            player_face.speedX = player.speedX;
+            player_face.speedY = player.speedY;
+            player_face.width = 5;
+            player_face.height = player.height;
+            player_face.x = player.x + 25;
+            player_face.y = player.y;
+            break;
+        case 40:
+            movedown();
+            direction = "down";
+            player_face.speedX = player.speedX;
+            player_face.speedY = player.speedY;
+            player_face.width = player.width;
+            player_face.height = 5;
+            player_face.x = player.x;
+            player_face.y = player.y + 25;
+            break;
+        case 16:
+            stop();
+            break;
+        case 32:
+            if (bullet_active === false) {
+                shoot();
+            }
+            break;
+    }
+}
+var player;
+    
+function startGame() {
+    setTimeout(myFunction, 30000);
+    myGameArea.start();
+    player = new component(30, 30, "red", 10, 120);
+    player_face = new component(5, 30, "black", 10, 120)
+    enemy = new component(25, 25, "green", 100, 50);
+}
+
+function myFunction() {
+    alert('Time Sneaks Up on You');
+}
+
+function shoot() {
+    switch(direction) {
+        case "left":
+            bullet = new make_bullet(5, "blue", player.x, player.y + 15);
+            bullet.speedY = 0;
+            bullet.speedX = -5;
+            break;
+        case "up":
+            bullet = new make_bullet(5, "blue", player.x + 15, player.y);
+            bullet.speedX = 0;
+            bullet.speedY = -5;
+            break;
+        case "right":
+            bullet = new make_bullet(5, "blue", player.x + 30, player.y + 15);
+            bullet.speedY = 0;
+            bullet.speedX = 5;
+            break;
+        case "down":
+            bullet = new make_bullet(5, "blue", player.x + 15, player.y + 30);
+            bullet.speedX = 0;
+            bullet.speedY = 5;
+            break;
+    }
+}
+    
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.interval = setInterval(updateGameArea, 20);
+    },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+function component(width, height, color, x, y) {
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y; 
+    this.speedX = 0;
+    this.speedY = 0;
+    this.update = function(){
+        ctx = myGameArea.context;
+        ctx.fillStyle = color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+    this.newPos = function(){
+        this.x += this.speedX
+        this.y += this.speedY
+    }
+}
+
+var bullet_active = false; 
+function make_bullet(radius, color, x,y){
+    this.x = x;
+    this.y = y; 
+    this.speedX = 0;
+    this.speedY = 0;
+    this.radius = radius;
+    this.update = function(){
+        ctx = myGameArea.context;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.radius,0,2*Math.PI);
+        ctx.closePath();
+        ctx.fill();
+    }
+    this.newPos = function(){
+        this.x += this.speedX
+        this.y += this.speedY
+    }
+    bullet_active = true;
+}
+
+function enemyMovement(){
+	if (enemy.y > player_lag.pop()) {
+        enemy.speedY = -1;
+    } else {
+        enemy.speedY = 1;
+    }
+    if (enemy.x > player_lag.pop()) {
+        enemy.speedX = -1;
+    } else {
+        enemy.speedX = 1;
+    }
+}    
+
+var player_lag = [0, 0, 120, 400, 300, 200, 128, 50, 75, 80, 11, 200, 15, 37, 45, 68, 92, 0, 10, 50, 40, 100, 28, 5, 6, 70, 10, 100, 10, 10, 300, 80, 10, 50, 0, 0, 120, 400, 300, 200, 128, 50, 75, 80, 11, 200, 15, 37, 45, 68, 92, 0, 10, 50, 40, 100, 28, 5, 6, 70, 10, 100, 10, 10, 300, 80, 10, 50, 0, 0, 120, 400, 300, 200, 128, 50, 75, 80, 11, 200, 15, 37, 45, 68, 92, 0, 10, 50, 40, 100, 28, 5, 6, 70, 10, 100, 10, 10, 300, 80, 10, 50];
+function updateGameArea() {
+    myGameArea.clear();
+    if (bullet_active === true) {
+        if ((bullet.x >= enemy.x && bullet.x <= enemy.x +   enemy.width) && (bullet.y >= enemy.y && bullet.y <= enemy.y + enemy.width)) {
+            bullet.x = 520;
+            bullet.speedX = 0;
+            enemy.width -= 5;
+            enemy.height -= 5;
+            enemy.x += 2;
+            enemy.y += 2;
+            bullet_active = false;
+        }
+        if ((bullet.x <= -20 || bullet.x >= 520) || (bullet.y <= -20 || bullet.y >= 310)) {
+            bullet_active = false;
+        }
+    }
+    if ((enemy.x >= player.x && enemy.x <= player.x + player.width) && (enemy.y >= player.y && enemy.y <= player.y + player.height)) {
+        player.x = -100;
+        enemy.x = -100;
+        player_face.x = -100;
+        if (player_face.x < -10) {
+            clearInterval(myGameArea.interval);
+            alert("GAME OVER");
+        }
+    }
+    player_lag.unshift(player.x, player.y);
+    enemyMovement();
+    player.newPos();
+    player.update();
+    enemy.newPos();
+    enemy.update();
+    player_face.newPos();
+    player_face.update();
+    bullet.newPos();
+    bullet.update();
+}
+
+function moveup() {
+    player.speedY = -2; 
+    player.speedX = 0; 
+}
+
+function movedown() {
+    player.speedY = 2;
+    player.speedX = 0;
+}
+
+function moveleft() {
+    player.speedX = -2;
+    player.speedY = 0;
+}
+
+function moveright() {
+    player.speedX = 2;
+    player.speedY = 0;
+}
+    
+function stop() {
+    player.speedX = 0;
+    player.speedY = 0;
+    player_face.speedX = 0;
+    player_face.speedY = 0;
+}
+    
+</script>
+
+</body>
+</html>
+
+
+
